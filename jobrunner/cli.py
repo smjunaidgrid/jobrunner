@@ -8,6 +8,8 @@ from jobrunner.database import get_job, get_steps
 from jobrunner.database import list_jobs
 from jobrunner.database import get_failed_steps, reset_failed_steps
 from jobrunner.engine import run_job
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(help="Jobrunner CLI")
 
@@ -15,7 +17,7 @@ cli = typer.Typer()
 app.add_typer(cli)
 
 
-
+console = Console()
 @cli.command()
 def init():
     """
@@ -93,18 +95,22 @@ def list():
     jobs = list_jobs()
 
     if not jobs:
-        typer.echo("No jobs found")
+        console.print("[bold red]No jobs found[/bold red]")
         return
 
-    typer.echo("\nJobs:\n")
+    table = Table(title="Jobrunner Jobs")
+
+    table.add_column("Job ID", style="cyan")
+    table.add_column("Pipeline", style="magenta")
+    table.add_column("Status", style="green")
+    table.add_column("Created At", style="yellow")
 
     for job in jobs:
         job_id, name, status, created = job
+        table.add_row(job_id, name, status.upper(), created)
 
-        typer.echo(
-            f"{job_id} | {name} | {status} | created: {created}"
-        )
-
+    console.print(table)
+    
 @cli.command()
 def logs(job_id: str, step: str = None):
     """
