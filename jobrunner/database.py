@@ -88,3 +88,103 @@ def create_steps(job_id, steps):
 
     conn.commit()
     conn.close()
+
+def get_job(job_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id, name, status, created_at, completed_at FROM jobs WHERE id=?",
+        (job_id,),
+    )
+
+    job = cursor.fetchone()
+
+    conn.close()
+    return job
+
+
+def get_steps(job_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT name, status, retry_count, max_retries, started_at, completed_at
+        FROM steps
+        WHERE job_id=?
+        ORDER BY rowid
+        """,
+        (job_id,),
+    )
+
+    steps = cursor.fetchall()
+
+    conn.close()
+    return steps
+
+def list_jobs():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, name, status, created_at
+        FROM jobs
+        ORDER BY created_at DESC
+        """
+    )
+
+    jobs = cursor.fetchall()
+
+    conn.close()
+    return jobs
+
+def get_failed_steps(job_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id
+        FROM steps
+        WHERE job_id=? AND status='failed'
+        """,
+        (job_id,),
+    )
+
+    steps = cursor.fetchall()
+
+    conn.close()
+    return steps
+
+def reset_failed_steps(job_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        UPDATE steps
+        SET status='pending',
+            retry_count=0,
+            started_at=NULL,
+            completed_at=NULL
+        WHERE job_id=? AND status='failed'
+        """,
+        (job_id,),
+    )
+
+    cursor.execute(
+        """
+        UPDATE jobs
+        SET status='pending',
+            completed_at=NULL
+        WHERE id=?
+        """,
+        (job_id,),
+    )
+
+    conn.commit()
+    conn.close()
+
+    
