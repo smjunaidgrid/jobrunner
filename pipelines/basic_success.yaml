@@ -1,0 +1,10 @@
+name : basic_success
+
+steps:
+- name : hello 
+  command: "echo Hey Job runner"
+  retry : 0
+
+- name : world 
+  command : "echo Workflow completed"
+  retry : 1

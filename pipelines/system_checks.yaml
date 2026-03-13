@@ -1,0 +1,14 @@
+name: system_checks
+
+steps:
+  - name: show_directory
+    command: "pwd"
+    retry: 0
+
+  - name: list_files
+    command: "ls"
+    retry: 0
+
+  - name: python_version
+    command: "python --version"
+    retry: 0

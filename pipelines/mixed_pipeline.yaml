@@ -1,0 +1,14 @@
+name: mixed_pipeline
+
+steps:
+  - name: step1
+    command: "echo Step 1 running"
+    retry: 0
+
+  - name: step2
+    command: "false"
+    retry: 1
+
+  - name: step3
+    command: "echo Step 3 should not run"
+    retry: 0
